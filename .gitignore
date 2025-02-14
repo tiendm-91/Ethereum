@@ -9,4 +9,3 @@
 # solidity-coverage files
 **/coverage
 **/coverage.json
-/MyToken/node_modules
