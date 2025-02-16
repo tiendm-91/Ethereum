@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MyToken2 is ERC20 {
-    constructor(uint256 initialSupply) ERC20("My Token", "MTK") {
+    constructor(uint256 initialSupply) ERC20("My Token", "MTK2") {
         // Chuyển toàn bộ token đến địa chỉ tạo hợp đồng (msg.sender)
         _mint(msg.sender, initialSupply);
     }

@@ -1,3 +1,6 @@
 eth.account
 eth.accounts
 net.peerCount
+eth.coinbase
+eth.accounts
+eth.blockNumber

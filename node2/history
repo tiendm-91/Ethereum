@@ -2,3 +2,10 @@ eth.accounts
 eth.pendingTransactions
 net.peerCount
 eth.accounts
+net.peerCount
+eth.accounts
+miner.setEtherbase(eth.accounts[0])
+eth.coinbase
+miner.start()
+miner.stop()
+eth.blockNumber
