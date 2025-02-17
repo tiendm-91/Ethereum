@@ -12,6 +12,7 @@ contract DEX {
     
     uint256 public totalLiquidity;
     mapping(address => uint256) public liquidity;
+    uint256 public feeBasisPoints = 3; // feeBasisPoints chia cho 1000 để ra %(3 tương ứng với 0.3%)
 
     event Token1Purchase(address indexed buyer, uint256 token2Sold, uint256 token1Bought);
     event Token2Purchase(address indexed buyer, uint256 token1Sold, uint256 token2Bought);
@@ -39,22 +40,33 @@ contract DEX {
         return (inputAmount.mul(outputReserve)).div(inputReserve.add(inputAmount));
     }
 
+    // Tính phí
+    function applyFee(uint256 amount) internal view returns (uint256) {
+        return amount.mul(1000 - feeBasisPoints).div(1000);
+    }
+
     // Giao dịch từ token1 sang token2
     function token1ToToken2Swap(uint256 token1Sold) public {
         uint256 token2Reserve = myToken2.balanceOf(address(this));
         uint256 token2Bought = getPrice(token1Sold, myToken1.balanceOf(address(this)), token2Reserve);
+        uint256 token2AfterFee = applyFee(token2Bought); // Trừ phí giao dịch
+
         require(myToken1.transferFrom(msg.sender, address(this), token1Sold), "Token1 transfer failed");
-        require(myToken2.transfer(msg.sender, token2Bought), "Token2 transfer failed");
-        emit Token1Purchase(msg.sender, token1Sold, token2Bought);
+        require(myToken2.transfer(msg.sender, token2AfterFee), "Token2 transfer failed");
+
+        emit Token1Purchase(msg.sender, token1Sold, token2AfterFee);
     }
 
     // Giao dịch từ token2 sang token1
     function token2ToToken1Swap(uint256 token2Sold) public {
         uint256 token1Reserve = myToken1.balanceOf(address(this));
         uint256 token1Bought = getPrice(token2Sold, myToken2.balanceOf(address(this)), token1Reserve);
+        uint256 token1AfterFee = applyFee(token1Bought); // Trừ phí giao dịch
+
         require(myToken2.transferFrom(msg.sender, address(this), token2Sold), "Token2 transfer failed");
-        require(myToken1.transfer(msg.sender, token1Bought), "Token1 transfer failed");
-        emit Token2Purchase(msg.sender, token2Sold, token1Bought);
+        require(myToken1.transfer(msg.sender, token1AfterFee), "Token1 transfer failed");
+
+        emit Token2Purchase(msg.sender, token2Sold, token1AfterFee);
     }
 
     // Cung cấp thanh khoản cho pool
@@ -141,5 +153,10 @@ contract DEX {
 
     function getToken2Balance() public view returns (uint256) {
         return myToken2.balanceOf(address(this));
+    }
+
+    function setFee(uint256 newFeeBasisPoints) public {
+        require(newFeeBasisPoints <= 50, "Fee too high"); // Giới hạn tối đa 5%
+        feeBasisPoints = newFeeBasisPoints;
     }
 }
